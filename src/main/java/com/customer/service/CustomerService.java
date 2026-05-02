@@ -215,11 +215,18 @@ public class CustomerService {
     }
 
     public void uploadCustomersFromCsv(org.springframework.web.multipart.MultipartFile file) {
-        logger.info("Entering uploadCustomersFromCsv");
+        logger.info("Entering uploadCustomersFromCsv with file: {}", file.getOriginalFilename());
+        int count = 0;
         try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(file.getInputStream()))) {
             String line;
             boolean isFirstLine = true;
-            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            
+            // Supporting multiple potential date formats
+            java.time.format.DateTimeFormatter[] formatters = {
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME,
+                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd") // Fallback for date only
+            };
 
             while ((line = br.readLine()) != null) {
                 if (isFirstLine) {
@@ -227,36 +234,54 @@ public class CustomerService {
                     continue; // Skip header
                 }
                 
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
+                if (line.trim().isEmpty()) continue;
 
-                String[] data = line.split(",");
-                // CSV columns: customer_id,name,email,phone,kyc_status,created_at
+                // Improved CSV splitting (handles quotes if needed, though simple split is usually okay for this dataset)
+                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                
                 if (data.length >= 6) {
-                    Customer customer = new Customer();
-                    // We can either set the ID or let it auto-generate, but since dataset has ID, we might just ignore the CSV ID to let MySQL auto-generate, 
-                    // or set it if we want to retain the exact ID. For JPA to save with specific ID without thinking it's an update, we'd need to handle it.
-                    // Let's assume we want to insert them as new, or update if exists. Since they might exist, let's try to find them first.
-                    Long id = Long.parseLong(data[0].trim());
-                    java.util.Optional<Customer> existing = customerRepository.findById(id);
-                    if (existing.isPresent()) {
-                        customer = existing.get();
-                    } else {
+                    try {
+                        Long id = Long.parseLong(data[0].trim().replace("\"", ""));
+                        Customer customer = customerRepository.findById(id).orElse(new Customer());
+                        
                         customer.setId(id);
+                        customer.setName(data[1].trim().replace("\"", ""));
+                        customer.setEmail(data[2].trim().replace("\"", ""));
+                        customer.setPhone(data[3].trim().replace("\"", ""));
+                        customer.setKycStatus(data[4].trim().replace("\"", "").toUpperCase());
+                        
+                        String dateStr = data[5].trim().replace("\"", "");
+                        LocalDateTime createdAt = null;
+                        
+                        for (java.time.format.DateTimeFormatter formatter : formatters) {
+                            try {
+                                if (formatter.toString().contains("yyyy-MM-dd") && !dateStr.contains(" ")) {
+                                    createdAt = java.time.LocalDate.parse(dateStr, formatter).atStartOfDay();
+                                } else {
+                                    createdAt = LocalDateTime.parse(dateStr, formatter);
+                                }
+                                break;
+                            } catch (Exception ignored) {}
+                        }
+                        
+                        if (createdAt == null) {
+                            logger.warn("Could not parse date: {}. Using current time.", dateStr);
+                            createdAt = LocalDateTime.now();
+                        }
+                        
+                        customer.setCreatedAt(createdAt);
+                        customerRepository.save(customer);
+                        count++;
+                    } catch (Exception e) {
+                        logger.warn("Skipping invalid row [{}]: {}", line, e.getMessage());
                     }
-                    customer.setName(data[1].trim());
-                    customer.setEmail(data[2].trim());
-                    customer.setPhone(data[3].trim());
-                    customer.setKycStatus(data[4].trim());
-                    customer.setCreatedAt(LocalDateTime.parse(data[5].trim(), formatter));
-                    
-                    customerRepository.save(customer);
+                } else {
+                    logger.warn("Skipping row due to insufficient columns: {}", line);
                 }
             }
-            logger.info("CSV upload completed successfully.");
+            logger.info("CSV upload completed successfully. Processed {} records.", count);
         } catch (Exception e) {
-            logger.error("Error in uploadCustomersFromCsv: {}", e.getMessage(), e);
+            logger.error("Critical error in uploadCustomersFromCsv: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to upload customers from CSV: " + e.getMessage());
         }
     }

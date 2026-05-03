@@ -1,0 +1,18 @@
+server:
+  port: ${SERVER_PORT:8081}
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/customer_db}
+    username: ${DB_USER:customer}
+    password: ${DB_PASSWORD:customer}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

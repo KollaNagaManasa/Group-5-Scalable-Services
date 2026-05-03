@@ -1,16 +1,15 @@
 import csv
 import requests
+import time
+import random
 
 # -------------------------------
-# CONFIG (update if needed)
+# CONFIG
 # -------------------------------
 CUSTOMER_API = "http://localhost:8081/customers"
 ACCOUNT_API = "http://localhost:8082/accounts"
 TRANSACTION_API = "http://localhost:8083/transactions/transfer"
 
-# -------------------------------
-# STORAGE (mapping account_id → account_number)
-# -------------------------------
 account_map = {}
 
 # -------------------------------
@@ -22,27 +21,26 @@ with open('bank_customers.csv') as file:
     reader = csv.DictReader(file)
     for row in reader:
         try:
-            response = requests.post(CUSTOMER_API, json={
+            res = requests.post(CUSTOMER_API, json={
                 "name": row["name"],
                 "email": row["email"]
             })
-            print(f"Customer {row['name']} → {response.status_code}")
+            print(f"Customer {row['name']} → {res.status_code}")
         except Exception as e:
             print(f"Error loading customer {row['name']}: {e}")
 
 # -------------------------------
 # LOAD ACCOUNTS
 # -------------------------------
-print("\n📥 Loading accounts...")
+print("\n Loading accounts...")
 
 with open('bank_accounts.csv') as file:
     reader = csv.DictReader(file)
     for row in reader:
         try:
-            # store mapping
             account_map[row["account_id"]] = row["account_number"]
 
-            response = requests.post(ACCOUNT_API, json={
+            res = requests.post(ACCOUNT_API, json={
                 "customerId": int(row["customer_id"]),
                 "customerName": f"User-{row['customer_id']}",
                 "accountNumber": row["account_number"],
@@ -50,7 +48,7 @@ with open('bank_accounts.csv') as file:
                 "balance": float(row["balance"])
             })
 
-            print(f"Account {row['account_number']} → {response.status_code}")
+            print(f"Account {row['account_number']} → {res.status_code}")
 
         except Exception as e:
             print(f"Error loading account {row['account_number']}: {e}")
@@ -60,36 +58,40 @@ with open('bank_accounts.csv') as file:
 # -------------------------------
 print("\n Loading transactions...")
 
+account_numbers = list(account_map.values())
+
 with open('bank_transactions.csv') as file:
     reader = csv.DictReader(file)
-    for row in reader:
+
+    for i, row in enumerate(reader, start=1):
         try:
-            account_id = row["account_id"]
-            account_number = account_map.get(account_id)
+            from_acc = account_map.get(row["account_id"])
 
-            if not account_number:
-                print(f"Skipping txn {row['txn_id']} (no account mapping)")
-                continue
+            # pick random different account as receiver
+            to_acc = random.choice(account_numbers)
+            while to_acc == from_acc:
+                to_acc = random.choice(account_numbers)
 
-            response = requests.post(
+            payload = {
+                "fromAccount": from_acc,
+                "toAccount": to_acc,
+                "amount": float(row["amount"]),
+                "reference": row["reference"]
+            }
+
+            res = requests.post(
                 TRANSACTION_API,
-                json={
-                    "fromAccountNumber": account_number,
-                    "toAccountNumber": account_number,  # simplified
-                    "amount": float(row["amount"]),
-                    "reference": row["reference"]
-                },
-                headers={
-                    "Idempotency-Key": row["txn_id"]
-                }
+                json=payload,
+                headers={"Idempotency-Key": row["txn_id"]},
+                timeout=5
             )
 
-            print(f"Transaction {row['txn_id']} → {response.status_code}")
+            print(f"Txn {row['txn_id']} → {res.status_code}")
 
         except Exception as e:
             print(f"Error loading txn {row['txn_id']}: {e}")
 
-# -------------------------------
-# DONE
-# -------------------------------
+        # prevent overload
+        time.sleep(0.2)
+
 print("\n Data loading completed successfully!")

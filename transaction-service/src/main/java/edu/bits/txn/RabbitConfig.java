@@ -1,5 +1,6 @@
 package edu.bits.txn;
 
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -9,6 +10,13 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitConfig {
+
+    public static final String EXCHANGE = "txn.exchange";
+
+    @Bean
+    public DirectExchange exchange() {
+        return new DirectExchange(EXCHANGE);
+    }
 
     @Bean
     public MessageConverter jsonMessageConverter() {

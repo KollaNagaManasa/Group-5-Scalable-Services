@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/notifications")
 public class NotificationController {
-    private static final BigDecimal HIGH_VALUE_THRESHOLD = new BigDecimal("50000");
     private final NotificationRepository repository;
 
     public NotificationController(NotificationRepository repository) {

@@ -10,10 +10,14 @@ public class NotificationLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String type;
-    @Column(length = 1500)
     private String message;
     private String destination;
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private OffsetDateTime createdAt;
+
+    @PrePersist
+    void prePersist() {
+        this.createdAt = OffsetDateTime.now();
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

@@ -1,3 +1,10 @@
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+
+@EnableRabbit
+@SpringBootApplication
+public class NotificationServiceApplication {
+}
+
 package edu.bits.notification;
 
 import org.springframework.boot.SpringApplication;

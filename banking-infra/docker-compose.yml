@@ -8,7 +8,7 @@ services:
       POSTGRES_DB: customer_db
       POSTGRES_USER: customer
       POSTGRES_PASSWORD: customer
-    ports: ["5433:5432"]
+    ports: ["5442:5432"]
     volumes:
       - customer_pg:/var/lib/postgresql/data
   account-db:
@@ -17,7 +17,7 @@ services:
       POSTGRES_DB: account_db
       POSTGRES_USER: account
       POSTGRES_PASSWORD: account
-    ports: ["5434:5432"]
+    ports: ["5441:5432"]
     volumes:
       - account_pg:/var/lib/postgresql/data
   transaction-db:

@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: customer
       POSTGRES_PASSWORD: customer
     ports:
-      - "5433:5432"
+      - "5443:5432"
     volumes:
       - ./Seed-Data/customer:/docker-entrypoint-initdb.d
 

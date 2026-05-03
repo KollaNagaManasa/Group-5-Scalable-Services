@@ -1,0 +1,93 @@
+version: "3.9"
+# Intended layout: sibling clones — workspace/customer-service, workspace/account-service, ...
+# Run from this folder: docker compose up --build
+services:
+  customer-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: customer_db
+      POSTGRES_USER: customer
+      POSTGRES_PASSWORD: customer
+    ports: ["5433:5432"]
+    volumes:
+      - customer_pg:/var/lib/postgresql/data
+  account-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: account_db
+      POSTGRES_USER: account
+      POSTGRES_PASSWORD: account
+    ports: ["5434:5432"]
+    volumes:
+      - account_pg:/var/lib/postgresql/data
+  transaction-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: transaction_db
+      POSTGRES_USER: transaction
+      POSTGRES_PASSWORD: transaction
+    ports: ["5435:5432"]
+    volumes:
+      - transaction_pg:/var/lib/postgresql/data
+  notification-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification
+      POSTGRES_PASSWORD: notification
+    ports: ["5436:5432"]
+    volumes:
+      - notification_pg:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: ["5672:5672", "15672:15672"]
+
+  customer-service:
+    build: ../customer-service
+    ports: ["8081:8081"]
+    depends_on: [customer-db]
+    environment:
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://customer-db:5432/customer_db
+      DB_USER: customer
+      DB_PASSWORD: customer
+
+  account-service:
+    build: ../account-service
+    ports: ["8082:8082"]
+    depends_on: [account-db, customer-service]
+    environment:
+      SERVER_PORT: 8082
+      DB_URL: jdbc:postgresql://account-db:5432/account_db
+      DB_USER: account
+      DB_PASSWORD: account
+      CUSTOMER_SERVICE_BASE_URL: http://customer-service:8081
+
+  transaction-service:
+    build: ../transaction-service
+    ports: ["8083:8083"]
+    depends_on: [transaction-db, account-service, rabbitmq]
+    environment:
+      SERVER_PORT: 8083
+      DB_URL: jdbc:postgresql://transaction-db:5432/transaction_db
+      DB_USER: transaction
+      DB_PASSWORD: transaction
+      RABBITMQ_HOST: rabbitmq
+      ACCOUNT_SERVICE_BASE_URL: http://account-service:8082
+
+  notification-service:
+    build: ../notification-service
+    ports: ["8084:8084"]
+    depends_on: [notification-db, rabbitmq]
+    environment:
+      SERVER_PORT: 8084
+      DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      DB_USER: notification
+      DB_PASSWORD: notification
+      RABBITMQ_HOST: rabbitmq
+
+volumes:
+  customer_pg:
+  account_pg:
+  transaction_pg:
+  notification_pg:

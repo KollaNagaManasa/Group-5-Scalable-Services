@@ -1,0 +1,15 @@
+server:
+  port: ${SERVER_PORT:8082}
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/account_db}
+    username: ${DB_USER:account}
+    password: ${DB_PASSWORD:account}
+  jpa:
+    hibernate:
+      ddl-auto: update
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

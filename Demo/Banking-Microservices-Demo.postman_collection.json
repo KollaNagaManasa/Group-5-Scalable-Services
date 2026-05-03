@@ -1,0 +1,425 @@
+{
+  "info": {
+    "_postman_id": "banking-microservices-demo",
+    "name": "Banking Microservices Demo",
+    "description": "Complete API collection for Banking Microservices demo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Customer Service",
+      "item": [
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rashi Verma\",\n  \"email\": \"rashi@bank.com\",\n  \"phone\": \"+91-9876543210\",\n  \"kycStatus\": \"VERIFIED\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/customers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/customers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/customers/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["customers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Customer KYC Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kycStatus\": \"PENDING_REVIEW\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/customers/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["customers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Customer Service Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["actuator", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Account Service",
+      "item": [
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"accountNumber\": \"ACC-2026-5001\",\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"INR\",\n  \"initialBalance\": 50000\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/accounts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get All Accounts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8082/accounts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Account by Number",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8082/accounts/ACC-2026-5001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["accounts", "ACC-2026-5001"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Balance",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8082/accounts/ACC-2026-5001/balance",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["accounts", "ACC-2026-5001", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Update Account Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"FROZEN\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/accounts/ACC-2026-5001/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["accounts", "ACC-2026-5001", "status"]
+            }
+          }
+        },
+        {
+          "name": "Account Service Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8082/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["actuator", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Transaction Service",
+      "item": [
+        {
+          "name": "Create Second Account (for transfer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": 1,\n  \"accountNumber\": \"ACC-2026-5002\",\n  \"accountType\": \"CHECKING\",\n  \"currency\": \"INR\",\n  \"initialBalance\": 30000\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8082/accounts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8082",
+              "path": ["accounts"]
+            }
+          }
+        },
+        {
+          "name": "Transfer Money (Inter-Service)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "txn-2026-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"ACC-2026-5001\",\n  \"toAccountNumber\": \"ACC-2026-5002\",\n  \"amount\": 5000,\n  \"reason\": \"Payment for services\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8083/transactions/transfer",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["transactions", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8083/transactions",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["transactions"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8083/transactions/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["transactions", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Transactions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8083/transactions/account/ACC-2026-5001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["transactions", "account", "ACC-2026-5001"]
+            }
+          }
+        },
+        {
+          "name": "Error - Insufficient Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "txn-2026-error-001"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountNumber\": \"ACC-2026-5001\",\n  \"toAccountNumber\": \"ACC-2026-5002\",\n  \"amount\": 500000,\n  \"reason\": \"This should fail - insufficient balance\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8083/transactions/transfer",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["transactions", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "Transaction Service Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8083/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8083",
+              "path": ["actuator", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Notification Service",
+      "item": [
+        {
+          "name": "Get All Notifications",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8084/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8084",
+              "path": ["notifications"]
+            }
+          }
+        },
+        {
+          "name": "Get Notifications by Account",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8084/notifications/account/ACC-2026-5001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8084",
+              "path": ["notifications", "account", "ACC-2026-5001"]
+            }
+          }
+        },
+        {
+          "name": "Notification Service Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8084/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8084",
+              "path": ["actuator", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Monitoring & Health",
+      "item": [
+        {
+          "name": "All Services Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["actuator", "health"]
+            }
+          }
+        },
+        {
+          "name": "Customer Service Metrics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/actuator/prometheus",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["actuator", "prometheus"]
+            }
+          }
+        },
+        {
+          "name": "Customer Service Swagger",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/swagger-ui/index.html",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["swagger-ui", "index.html"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
